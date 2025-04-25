@@ -61,11 +61,7 @@ export default function CalendarScreen({ navigation, route }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={28} color="#004D40" />
-        </TouchableOpacity>
-      </View>
+     
 
       <View style={styles.patientHeader}>
         <Text style={styles.patientName}>

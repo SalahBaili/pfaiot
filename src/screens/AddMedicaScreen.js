@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -6,8 +6,16 @@ import { database } from '../config/firebase';
 import { ref, set, get } from 'firebase/database';
 
 
+
+
 export default function AddMedicaScreen({ navigation, route }) {
   const { patient } = route.params; // Récupérer le patient à partir de la navigation
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+    });
+  }, [navigation]);
+  
 
   const [count, setCount] = useState(1);
   const [hour, setHour] = useState(12);

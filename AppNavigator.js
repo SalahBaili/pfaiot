@@ -23,14 +23,17 @@ export default function AppNavigator() {
         <Stack.Screen
           name="CalendarScreen"
           component={CalendarScreen}
-          options={{ title: 'Calendrier' }}
+          options={{
+            title: 'Calendrier',
+            headerLeft: null, // <<< Pas de flèche retour sur le calendrier
+          }}
         />
 
         {/* Écran d'ajout de médicament */}
         <Stack.Screen
           name="AddMedicaScreen"
           component={AddMedicaScreen}
-          options={{ title: 'Ajouter un médicament' }}
+          options={{ headerShown: false }} // <<< On cache complètement le header ici
         />
       </Stack.Navigator>
     </NavigationContainer>
