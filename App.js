@@ -30,7 +30,12 @@ export default function App() {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="AddPatientScreen" component={AddPatientScreen} />
         <Stack.Screen name="PatientDetailScreen" component={PatientDetailScreen} />
-        <Stack.Screen name="CalendarScreen" component={CalendarScreen} />
+        <Stack.Screen
+  name="CalendarScreen"
+  component={CalendarScreen}
+  options={{ headerShown: true, title: 'Calendrier', headerStyle: { backgroundColor: '#004D40' }, headerTintColor: '#fff' }}
+/>
+
         <Stack.Screen name="AddMedicaScreen" component={AddMedicaScreen} />
         <Stack.Screen name="MedicationDetailsScreen" component={MedicationDetailsScreen} />
         <Stack.Screen name="MedicalFiche" component={MedicalFiche} />

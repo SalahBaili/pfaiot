@@ -3,7 +3,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import React, { useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { auth } from '../firebaseConfig';
+import { auth } from '../firebase';
 
 export default function SignupScreen({ navigation }) {
   const [fullName, setFullName] = useState('');

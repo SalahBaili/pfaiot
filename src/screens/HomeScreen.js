@@ -14,7 +14,7 @@ import {
   View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { auth } from '../firebaseConfig';
+import { auth } from '../firebase';
 
 const HomeScreen = ({ navigation }) => {
   const [patients, setPatients] = useState([]);

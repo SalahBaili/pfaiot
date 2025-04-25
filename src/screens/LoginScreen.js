@@ -2,7 +2,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import React, { useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Importez les icônes
-import { auth } from '../firebaseConfig'; // Assurez-vous que le chemin est correct
+import { auth } from '../firebase'; // Assurez-vous que le chemin est correct
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');

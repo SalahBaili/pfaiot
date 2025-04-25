@@ -3,7 +3,7 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { auth } from '../firebaseConfig';
+import { auth } from '../firebase';
 
 export default function ResetPasswordScreen({ navigation }) {
   const [email, setEmail] = useState('');

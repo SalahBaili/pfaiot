@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { database } from '../config/firebase';
+import { ref, onValue } from 'firebase/database';
 
 const formatDateToFrench = (dateString) => {
   const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
@@ -15,36 +17,43 @@ export default function CalendarScreen({ navigation, route }) {
   const [medicationsByDate, setMedicationsByDate] = useState({});
   const { patient } = route.params || {};
 
-  // Fonction pour ajouter un médicament (callback)
+  useEffect(() => {
+    if (!patient?.id) return;
+
+    const userId = patient.id;
+    const dbRef = ref(database, `patients/${userId}/medications`);
+
+    const unsubscribe = onValue(dbRef, (snapshot) => {
+      const data = snapshot.val();
+      setMedicationsByDate(data || {});
+    });
+
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={() => navigation.navigate('AddMedicaScreen', { patient, onAddMedica: handleAddMedica })}>
+          <Icon name="add-circle-outline" size={30} color="#fff" style={{ marginRight: 16 }} />
+        </TouchableOpacity>
+      ),
+    });
+
+    return () => unsubscribe();
+  }, [patient, navigation]);
+
   const handleAddMedica = (medicaData) => {
     const { name, hour, date } = medicaData;
     setSelectedDate(date);
 
     setMedicationsByDate(prev => {
-      const prevForDate = prev[date] || {
-        morning: [],
-        afternoon: [],
-        evening: [],
-      };
+      const prevForDate = prev[date] || { morning: [], afternoon: [], evening: [] };
+      const medsForDate = { ...prevForDate };
 
-      const medsForDate = {
-        morning: [...prevForDate.morning],
-        afternoon: [...prevForDate.afternoon],
-        evening: [...prevForDate.evening],
-      };
-
-      let timeOfDay = 'evening';
-      if (hour < 12) timeOfDay = 'morning';
-      else if (hour < 18) timeOfDay = 'afternoon';
+      let timeOfDay = hour < 12 ? 'morning' : (hour < 18 ? 'afternoon' : 'evening');
 
       if (!medsForDate[timeOfDay].includes(name)) {
         medsForDate[timeOfDay].push(name);
       }
 
-      return {
-        ...prev,
-        [date]: medsForDate,
-      };
+      return { ...prev, [date]: medsForDate };
     });
   };
 
@@ -62,12 +71,6 @@ export default function CalendarScreen({ navigation, route }) {
         <Text style={styles.patientName}>
           {patient?.name ? formatPatientName(patient.name) : 'Patient'}
         </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('AddMedicaScreen', {
-          patient,
-          onAddMedica: handleAddMedica, // 🔁 Callback
-        })}>
-          <Icon name="add-circle-outline" size={24} color="#fff" />
-        </TouchableOpacity>
       </View>
 
       <Calendar
@@ -96,26 +99,21 @@ export default function CalendarScreen({ navigation, route }) {
         {selectedDate ? `Date sélectionnée: ${formatDateToFrench(selectedDate)}` : 'Sélectionnez une date'}
       </Text>
 
-      <Text style={styles.doseTitle}>• Matin :</Text>
-      <View style={styles.doseBubble}>
-        <Text style={styles.bubbleText}>
-          {(medicationsByDate[selectedDate]?.morning || []).join(', ') || 'Aucun médicament'}
-        </Text>
-      </View>
-
-      <Text style={styles.doseTitle}>• Midi :</Text>
-      <View style={styles.doseBubble}>
-        <Text style={styles.bubbleText}>
-          {(medicationsByDate[selectedDate]?.afternoon || []).join(', ') || 'Aucun médicament'}
-        </Text>
-      </View>
-
-      <Text style={styles.doseTitle}>• Soir :</Text>
-      <View style={styles.doseBubble}>
-        <Text style={styles.bubbleText}>
-          {(medicationsByDate[selectedDate]?.evening || []).join(', ') || 'Aucun médicament'}
-        </Text>
-      </View>
+      {['morning', 'afternoon', 'evening'].map((moment, idx) => {
+        const meds = selectedDate && medicationsByDate[selectedDate]?.[moment];
+        return (
+          <View key={idx}>
+            <Text style={styles.doseTitle}>
+              • {moment === 'morning' ? 'Matin' : moment === 'afternoon' ? 'Midi' : 'Soir'} :
+            </Text>
+            <View style={styles.doseBubble}>
+              <Text style={styles.bubbleText}>
+                {Array.isArray(meds) && meds.length > 0 ? meds.join(', ') : 'Aucun médicament'}
+              </Text>
+            </View>
+          </View>
+        );
+      })}
     </View>
   );
 }

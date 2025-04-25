@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { database } from '../config/firebase';
+import { ref, set, get } from 'firebase/database';
+
 
 export default function AddMedicaScreen({ navigation, route }) {
   const { patient } = route.params; // Récupérer le patient à partir de la navigation
@@ -21,22 +24,53 @@ export default function AddMedicaScreen({ navigation, route }) {
   const incrementMinute = () => setMinute(prev => (prev < 59 ? prev + 1 : prev));
   const decrementMinute = () => setMinute(prev => (prev > 0 ? prev - 1 : prev));
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!medicaName.trim()) {
+      alert('Veuillez entrer le nom du médicament');
+      return;
+    }
+  
+    const formattedDate = selectedDate.toISOString().split('T')[0];
     const medicaData = {
-      name: medicaName,
+      name: medicaName.trim(),
       hour,
       minute,
       count,
       type,
-      date: selectedDate.toISOString().split('T')[0],
+      date: formattedDate,
     };
   
-    if (route.params?.onAddMedica) {
-      route.params.onAddMedica(medicaData); // ✅ Appel du callback
-    }
+    try {
+      const userId = patient?.id || 'defaultUser';
+      const medRef = ref(database, `patients/${userId}/medications/${formattedDate}`);
+      const snapshot = await get(medRef);
+      const prevMeds = snapshot.exists() ? snapshot.val() : { morning: [], afternoon: [], evening: [] };
   
-    navigation.goBack(); // ✅ Retour à CalendarScreen existant
+      let timeOfDay = 'evening';
+      if (hour < 12) timeOfDay = 'morning';
+      else if (hour < 18) timeOfDay = 'afternoon';
+  
+      if (!prevMeds[timeOfDay]) {
+        prevMeds[timeOfDay] = [];
+      }
+  
+      prevMeds[timeOfDay].push(medicaData.name);
+  
+      await set(medRef, prevMeds);
+  
+      if (route.params?.onAddMedica) {
+        route.params.onAddMedica(medicaData); // 🔥 update local CalendarScreen
+      }
+  
+      navigation.goBack();
+    } catch (error) {
+      console.error('Erreur lors de l\'enregistrement du médicament :', error);
+      alert('Erreur lors de l\'enregistrement.');
+    }
   };
+  
+  
+  
   
   
  
